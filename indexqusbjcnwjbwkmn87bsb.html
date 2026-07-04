@@ -23,6 +23,10 @@ body {
     color: #fff; 
     text-align: center; 
     font-family: sans-serif; 
+	/* スマホ左はみだし対策 */
+	display: flex;
+  	justify-content: center; /* これで子要素が中央にくる */
+  	overflow: hidden;        /* はみ出した分を非表示にする */
 }
 
 /* スムージング（補間）を防止し、くっきりと */
@@ -64,7 +68,7 @@ canvas { border:solid .2em #fff; }
 #mohomoho { width: 400px; height: auto; }
 #preview { width: 128px; height: auto; }
 #queue { width: 128px; height: auto; }
-@media screen and (max-width: 1000px) {
+@media screen and (max-width: 600px) {
   #game-wrapper {
     transform: scale(2.2);
     transform-origin: top center;
