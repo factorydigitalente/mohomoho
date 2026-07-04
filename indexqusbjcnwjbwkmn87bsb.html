@@ -65,7 +65,14 @@ canvas { border:solid .2em #fff; }
 #preview { width: 128px; height: auto; }
 #queue { width: 128px; height: auto; }
 @media screen and (max-width: 1000px) {
-    #game-wrapper { transform: scale(1.7); transform-origin: top center; }
+  #game-wrapper {
+    transform: scale(2.2);
+    transform-origin: top center;
+    /* 中央寄せのための設定 */
+    position: relative;
+    left: 50%;
+    margin-left: calc(-50% * 2.2); /* 要素の幅の半分を左にずらす */
+  }
 }
 </style>
 </head>
