@@ -201,7 +201,6 @@ canvas { border:solid .2em #fff; }
 .mode-btns { display:flex; flex-direction:column; gap:4px; }
 .mode-row { display:flex; align-items:center; gap:8px; font-size:12px; width: 100%; flex-wrap: nowrap; white-space: nowrap; }
 .mode-row span { font-weight: 800; }
-.mode-btn { padding:2px 8px; font-size:10px; cursor:pointer; flex: 0 0 80px; text-align:center; }
 .check { color:#0f0; }
 /* 説明用ダミーステージ行 */
 .info-row {
@@ -240,12 +239,61 @@ canvas { border:solid .2em #fff; }
     }
 }
 
+#guide-layer, #title-modal {
+    position: fixed; top:0; left:0; width:100%; height:100%;
+    display: flex; justify-content:center; align-items:center;
+    background: rgba(0,0,0,0.9); z-index:1000;
+    background-image: url('./img/bg_title.jpg');
+    background-size: 35%;
+    background-repeat: repeat;
+    background-position: 0 0;
+    animation: scrollBg 20s linear infinite;
+}
+#title-modal { 
+    display:none; 
+    flex-direction:column; 
+    justify-content:center; 
+    align-items:center; 
+    position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.9); z-index:1000;
+    background-image:url('./img/bg_title.jpg');
+    background-size:35%; background-repeat:repeat;
+    background-position:0 0; animation:scrollBg 20s linear infinite;
+}
+.guide-text {
+    color: #000;
+    text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff;
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+    font-size: 3em;
+    text-align: center;
+    animation: blink 5s infinite;
+}
+@keyframes scrollBg {
+    to { background-position: 512px 512px; }
+}
+@keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+#title-logo { width:90%; max-width:600px; margin-bottom:20px; }
+#title-btn-group { display:flex; justify-content:center; }
 </style>
 </head>
 <body>
 <!--
 <h1><img src="./img/logo.png" width="360px" alt="もほもほ 模仿模仿 Moho-Moho"></h1>
 -->
+<div id="guide-layer" onclick="hideGuide()">
+    <div class="guide-text">
+        タップかクリックしてね！<br>
+        <br>
+        PLEASE TOUCH<br>OR PRESS ANY KEY
+    </div>
+</div>
+<div id="title-modal">
+    <img id="title-logo" src="./img/logo.png" alt="もほもほ 模仿模仿 Moho-Moho">
+    <div id="title-btn-group">
+        <button id="start-btn" onclick="startGame()">START</button>
+    </div>
+</div>
 <div id="stage-select-overlay">
     <div id="stage-select-container">STAGE SELECT
 	    <div class="info-row">
@@ -279,7 +327,7 @@ canvas { border:solid .2em #fff; }
     <div class="canvas-container">
         <canvas id="mohomoho" width="192" height="320"></canvas>
         <div class="side-canvases">
-            <canvas id="preview" width="80" height="106"></canvas>
+            <canvas id="preview" width="79" height="105"></canvas>
             <canvas id="queue" width="128" height="480"></canvas>
         </div>
     </div>
@@ -930,9 +978,9 @@ const player = {
 function getPieceId(matrix) {
     const id = matrix.map(row => row.join(',')).join(',');
     // 灰色(0)のブロックが期待通りか確認するため、IDに0が含まれる場合のみログ出力
-    if (id.includes('0')) {
-        console.log("生成されたID:", id);
-    }
+    //if (id.includes('0')) {
+    //    console.log("生成されたID:", id);
+    //}
     return id;
 }
 
@@ -1796,9 +1844,30 @@ window.addEventListener('resize',checkOrientation);
 window.addEventListener('orientationchange',checkOrientation);
 window.addEventListener('DOMContentLoaded',checkOrientation);
 
+// ガイドを消してタイトルを表示する関数
+function hideGuide() {
+    const guide = document.getElementById('guide-layer');
+    const titleModal = document.getElementById('title-modal');
+    if(guide.style.display !== 'none'){
+        guide.style.display = 'none';
+        titleModal.style.display = 'flex';
+    }
+}
+// タイトルからステージ選択へ進む関数
+function startGame() {
+    document.getElementById('title-modal').style.display = 'none';
+    openStageSelect();
+    if (animationId === null) update(); // START時にループを開始
+}
+// キー入力でもガイドをスキップ可能にする
+document.addEventListener('keydown', () => {
+    const guide = document.getElementById('guide-layer');
+    if(guide.style.display !== 'none') hideGuide();
+});
+
 // ゲームを開始
 document.addEventListener('DOMContentLoaded', () => {
-    update();
+    // update(); // 自動スタートを停止
 });
 </script>
 </body>
