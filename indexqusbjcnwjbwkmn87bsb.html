@@ -173,6 +173,26 @@ canvas { border:solid .2em #fff; }
     from { background-position: 0 0; }
     to { background-position: 512px 512px; }
 }
+/* スマホ横持ち禁止 */
+#rotate-warning{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.9);
+    color:#fff;
+    font-size:20px;
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+}
+
+/* スマホ横向きだけ表示 */
+@media (max-width:768px) and (orientation: landscape){
+    #rotate-warning{
+        display:flex;
+    }
+}
+
 </style>
 </head>
 <body>
@@ -241,6 +261,9 @@ canvas { border:solid .2em #fff; }
             </div>
         </div>
     </div>
+</div>
+<div id="rotate-warning">
+    このゲームはスマホ縦持ち専用です。画面を縦向きにして遊んでね！
 </div>
 <script>
 // ステージ情報は0:灰, 1:赤, 2:緑, 3:青, 4:黄, 5:白
@@ -1711,6 +1734,20 @@ document.addEventListener("gesturechange",e=>{
 document.addEventListener("gestureend",e=>{
     e.preventDefault();
 });
+
+//横向き検知を補助（任意だけど安定性UP）
+function checkOrientation(){
+    const warning=document.getElementById('rotate-warning');
+    if(!warning) return;
+
+    const isMobile = window.innerWidth <= 768;
+    const isLandscape = window.innerWidth > window.innerHeight;
+
+    warning.style.display = (isMobile && isLandscape) ? 'flex' : 'none';
+}
+window.addEventListener('resize',checkOrientation);
+window.addEventListener('orientationchange',checkOrientation);
+window.addEventListener('DOMContentLoaded',checkOrientation);
 
 // ゲームを開始
 document.addEventListener('DOMContentLoaded', () => {
