@@ -76,10 +76,57 @@ body {
 #btn-left { top:35px; left:15px; clip-path:polygon(100% 50%, -10% -30%, -10% 130%); }
 #btn-right { top:35px; right:20px; clip-path:polygon(0% 50%, 110% -30%, 110% 130%); }
 
-.a-b-btn { width:90px; height:90px; border-radius:50%; border:none; background:#d00; color:white; font-weight:bold; font-size:2.2rem; transition:transform 0.1s, filter 0.1s; }
-.a-b-btn:active { transform:scale(0.9); filter:brightness(0.7); }
-.d-btn { position:absolute; width:55px; height:55px; background:#777; border-radius:10px; transition:transform 0.1s, filter 0.1s; }
-.d-btn:active { transform:scale(0.9); filter:brightness(0.7); }
+.a-b-btn {
+    width:90px;
+    height:90px;
+    border-radius:50%;
+
+    /* ★外枠（輪郭） */
+    border:3px solid rgba(255,255,255,0.65);
+
+    background:linear-gradient(#e00000,#900000);
+    color:white;
+    font-weight:bold;
+    font-size:2.2rem;
+
+    box-shadow:
+        0 5px 0 rgba(0,0,0,0.8),
+        inset 0 2px 0 rgba(255,255,255,0.2);
+
+    transition:transform 0.1s, filter 0.1s;
+}
+.a-b-btn:active {
+    transform:translateY(3px) scale(0.92);
+    filter:brightness(0.8);
+
+    box-shadow:
+        0 2px 0 rgba(0,0,0,0.9),
+        inset 0 3px 6px rgba(0,0,0,0.5);
+}
+.d-btn {
+    position:absolute;
+    width:55px;
+    height:55px;
+    background:linear-gradient(#8a8a8a,#5a5a5a);
+    border-radius:10px;
+
+    /* ★輪郭追加 */
+    border:2px solid rgba(255,255,255,0.55);
+    box-shadow:
+        0 3px 0 rgba(0,0,0,0.8),
+        inset 0 1px 0 rgba(255,255,255,0.2);
+
+    transition:transform 0.1s, filter 0.1s;
+}
+.d-btn:active {
+    transform:translateY(2px) scale(0.95);
+    filter:brightness(0.85);
+
+    /* 押し込み感強化 */
+    box-shadow:
+        0 1px 0 rgba(0,0,0,0.9),
+        inset 0 2px 4px rgba(0,0,0,0.4);
+}
 canvas { border:solid .2em #fff; }
 #mohomoho { width: 400px; height: auto; }
 #preview { width: 128px; height: auto; }
