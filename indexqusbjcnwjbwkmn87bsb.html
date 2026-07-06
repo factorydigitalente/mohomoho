@@ -169,7 +169,7 @@ canvas { border:solid .2em #fff; }
     background-blend-mode:darken;
     z-index:2000;
     overflow-y:auto;
-    padding:40px 20px 120px;
+    padding:20px 20px 120px; /* 上の余白を少し縮小 */
     box-sizing:border-box;
 }
 #stage-select-container{
@@ -330,6 +330,13 @@ h3 {
 .mode-btn-img:hover {
     transform: scale(1.05); /* ホバー時に少し大きくして反応を良くする */
 }
+.switch {
+    display: inline-block; padding: 8px 16px; border: 2px solid #555;
+    border-radius: 20px; cursor: pointer; background: #111;
+    font-size: 14px; font-weight: bold; margin: 0 5px;
+    user-select: none; transition: 0.2s;
+}
+.switch.active { border-color: #00ff66; color: #00ff66; box-shadow: 0 0 10px rgba(0,255,102,0.3); }
 </style>
 </head>
 <body>
@@ -343,12 +350,16 @@ h3 {
 <div id="title-modal">
     <img id="title-logo" src="./img/logo_ani.gif" alt="もほもほ 模仿模仿 Moho-Moho">
     <div id="title-btn-group">
-        <img src="./img/btn_start.png" alt="START" onclick="startGame()" class="start-btn-img">
+        <img src="./img/btn_start.png" alt="START" onclick="audio.playSE('./se/effect_go.mp3'); startGame();" class="start-btn-img">
     </div>
     <div id="copyright">©2026 Factory Digital Entertainment</div>
 </div>
 <div id="stage-select-overlay">
     <div id="stage-select-container">
+	<div style="text-align: center; margin-bottom: 20px;">
+        <div id="music-toggle" class="switch active" onclick="toggleMusic()">♪BGM ON</div>
+        <div id="alert-toggle" class="switch active" onclick="toggleAlert()">♪SE ON</div>
+    </div>
     	STAGE & MODE SELECT
 	    <div class="info-row">
 	        モードを選択してプレイ開始
@@ -366,7 +377,8 @@ h3 {
     <div id="ui-header">
 		<div class="header-top">
 	        <span id="current-stage-title" class="header-title">></span>
-	        <img src="./img/btn_back.png" class="btn-back" onclick="openStageSelect()"><!-- ステージ選択へ戻る -->
+	        <!-- ステージ選択へ戻る -->
+	        <img src="./img/btn_back.png" class="btn-back" onclick="audio.playSE('./se/effect_back.mp3'); audio.playBGM('./bgm/bgm_select.mp3'); openStageSelect();">
 	    </div>
         <div class="flex-row">
             <span id="stat-mode">FIX: 0%</span>
@@ -851,8 +863,12 @@ function openStageSelect() {
         };
         container.innerHTML = `
         	<div>
+        		<div style="text-align: center; margin-bottom: 20px;">
+			        <div id="music-toggle" class="switch active" onclick="toggleMusic()">♪BGM ON</div>
+			        <div id="alert-toggle" class="switch active" onclick="toggleAlert()">♪SE ON</div>
+			    </div>
 	            <h2 id="stage-select-title">STAGE & MODE SELECT</h2>
-	            <h3>「もほもほ」は完成図を見ながら色ブロックを配置していくパズルだよ！</h3>
+	            <h3>「もほもほ」は完成図を見ながら色ブロックを配置するパズルだよ！</h3>
 	            <h3>「模仿模仿」是一個看著完成圖來配置顏色方塊的拼圖遊戲！</h3>
 	            <h3>"Moho-Moho" is a puzzle game where you place color blocks while looking at the completed image!</h3>
             </div>
@@ -953,6 +969,10 @@ function openStageSelect() {
 
 function selectStage(idx, mode) {
     document.getElementById('stage-select-overlay').style.display = 'none';
+    audio.playSE('./se/effect_go.mp3');
+    const bgmMap = { FIX: './bgm/bgm_stage_fix.mp3', SIMILAR: './bgm/bgm_stage_similar.mp3', MIRROR: './bgm/bgm_stage_mirror.mp3' };
+    audio.playBGM(bgmMap[mode]);
+    
     isRandomStage = false;
     currentStageIndex = idx;
     currentStage = stages[idx];
@@ -1415,6 +1435,7 @@ function playerDrop() {
         const isCorrect=checkPiecePlacement(currentPiece,player.pos);
         if(isCorrect){
 		    merge(arena,player);
+		    audio.playSE('./se/se_correct.mp3');
 		    placeFlash={
 			    x:player.pos.x,
 			    y:player.pos.y,
@@ -1427,6 +1448,7 @@ function playerDrop() {
 		    updateUI();
 		}else{
 		    gameStat.ng++;
+		    audio.playSE('./se/se_ng.mp3');
 		    showWarning("NG Piece");
 		    updateUI();
 		    lastX = player.pos.x; // NG時も設置X座標を記録
@@ -1690,7 +1712,10 @@ document.addEventListener('keydown', event => {
 function handleSkip(){
     if(canPlaceCorrectlyNow(player.matrix)){
         gameStat.chanceLost++;
+        audio.playSE('./se/se_lost.mp3');
         showWarning("Chance Lost!");
+    }else{
+        audio.playSE('./se/se_skip.mp3');
     }
     player.matrix.isSkipped = true;
     queueList.push(player.matrix);
@@ -1789,6 +1814,7 @@ function resetGame() {
 // 結果画面オーバーレイ表示
 function showResultOverlay(mode, percentage){
     const overlay = document.getElementById('overlay');
+    audio.playBGM(percentage >= 0 ? './bgm/bgm_clear.mp3' : './bgm/bgm_gameover.mp3', false);
     const title = document.getElementById('overlay-title');
     // percentageが-1なら（ゲームオーバーなら）モード名のみ表示
     title.innerText = (percentage === 100) ? `${mode} Perfect!` : 
@@ -1857,6 +1883,9 @@ function selectRandomStage(mode) {
     currentStageIndex = randomIndex;
     currentStage = stages[randomIndex];
     currentGameMode = GAME_MODE[mode];
+    audio.playSE('./se/effect_go.mp3');
+    const bgmMap = { FIX: './bgm/bgm_stage_fix.mp3', SIMILAR: './bgm/bgm_stage_similar.mp3', MIRROR: './bgm/bgm_stage_mirror.mp3' };
+    audio.playBGM(bgmMap[mode]);
     resetGame();
 }
 
@@ -1907,6 +1936,9 @@ function selectGenerateStage(mode,level=3){
     currentStage=JSON.parse(JSON.stringify(stageData));
     currentGameMode=GAME_MODE[mode];
     document.getElementById('stage-select-overlay').style.display='none';
+    audio.playSE('./se/effect_go.mp3');
+    const bgmMap = { FIX: './bgm/bgm_stage_fix.mp3', SIMILAR: './bgm/bgm_stage_similar.mp3', MIRROR: './bgm/bgm_stage_mirror.mp3' };
+    audio.playBGM(bgmMap[mode]);
     resetGame();
 }
 
@@ -2362,12 +2394,14 @@ function hideGuide() {
     if(guide.style.display !== 'none'){
         guide.style.display = 'none';
         titleModal.style.display = 'flex';
+        audio.playBGM('./bgm/bgm_title.mp3');
     }
 }
 // タイトルからステージ選択へ進む関数
 function startGame() {
     document.getElementById('title-modal').style.display = 'none';
     openStageSelect();
+    audio.playBGM('./bgm/bgm_select.mp3');
     if (animationId === null) update(); // START時にループを開始
 }
 // キー入力でもガイドをスキップ可能にする
@@ -2380,6 +2414,50 @@ document.addEventListener('keydown', () => {
 document.addEventListener('DOMContentLoaded', () => {
     // update(); // 自動スタートを停止
 });
+
+//音源管理用クラス
+class AudioManager {
+    constructor() {
+        this.bgm = null;
+        this.se = {};
+        this.bgmMuted = false;
+        this.seMuted = false;
+    }
+    playBGM(src, loop = true) {
+        if (this.bgm) {
+            if (this.bgm.src.endsWith(src)) {
+                if (this.bgmMuted) this.bgm.pause(); else this.bgm.play().catch(() => {});
+                return;
+            }
+            this.bgm.pause();
+        }
+        this.bgm = new Audio(src);
+        this.bgm.loop = loop;
+        this.bgm.volume = 0.5;
+        if (!this.bgmMuted) this.bgm.play().catch(() => {});
+    }
+    stopBGM() { if (this.bgm) { this.bgm.pause(); this.bgm = null; } }
+    playSE(src) {
+        if (this.seMuted) return;
+        const audio = new Audio(src);
+        audio.volume = 0.7;
+        audio.play().catch(() => {});
+    }
+}
+const audio = new AudioManager();
+function toggleMusic() {
+    audio.bgmMuted = !audio.bgmMuted;
+    const btn = document.getElementById('music-toggle');
+    btn.classList.toggle('active', !audio.bgmMuted);
+    btn.innerText = audio.bgmMuted ? '♪BGM OFF' : '♪BGM ON';
+    if (audio.bgm) { if (audio.bgmMuted) audio.bgm.pause(); else audio.bgm.play().catch(() => {}); }
+}
+function toggleAlert() {
+    audio.seMuted = !audio.seMuted;
+    const btn = document.getElementById('alert-toggle');
+    btn.classList.toggle('active', !audio.seMuted);
+    btn.innerText = audio.seMuted ? '♪SE OFF' : '♪SE ON';
+}
 </script>
 </body>
 </html>
