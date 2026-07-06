@@ -32,7 +32,19 @@ body {
 #queue { border: solid .2em #fff; image-rendering: pixelated; }
 #preview { border: solid .2em #fff; image-rendering: pixelated; }
 /* UIヘッダーのスタイル */
-#ui-header { font-size: 14px; color: #fff; text-shadow: 1px 1px 2px #000; width:540px; margin-bottom:10px; background:#333; padding:10px; border-radius:5px; box-sizing:border-box; }
+#ui-header {
+    font-size: 14px; color: #fff; text-shadow: 1px 1px 2px #000; width:540px; margin-bottom:10px; background:#333; padding:10px; border-radius:5px; box-sizing:border-box;
+    display: flex; flex-direction: column;
+}
+.header-top {
+    display: grid; grid-template-columns: 40px 1fr 40px; align-items: center; margin-bottom: 5px;
+}
+.header-title {
+    grid-column: 2; text-align: center; font-size: 1.3em; margin-bottom:-20px;
+}
+.btn-back {
+    cursor: pointer; width: 40px; grid-column: 3; justify-self: end; margin-bottom:-20px;
+}
 #overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:1000; flex-direction:column; justify-content:center; align-items:center; color:white; pointer-events:none; }
 .message-box { background:rgba(0,0,0,0.6); backdrop-filter:blur(5px); padding:20px; border-radius:15px; pointer-events:auto; }
 #overlay-title { font-size:3rem; margin-bottom:10px; background:rgba(0,0,0,0.3); padding:10px 20px; border-radius:10px; }
@@ -130,7 +142,7 @@ body {
 canvas { border:solid .2em #fff; }
 #mohomoho { width: 400px; height: auto; }
 #preview { width: 128px; height: auto; }
-#queue { width: 128px; height: auto; }
+#queue { width: 128px; height: auto; border-radius: 8px; }
 /* スマホ調整 */
 @media screen and (max-width: 1000px) {
   #game-wrapper {
@@ -204,15 +216,23 @@ canvas { border:solid .2em #fff; }
 .check { color:#0f0; }
 /* 説明用ダミーステージ行 */
 .info-row {
-    display: flex;
-    align-items: center;
-    background: #444;
-    padding: 10px;
-    border-radius: 12px;
-    gap: 15px;
-    font-size: 12px;
-    color: #ccc;
-    font-style: italic;
+  display: flex;
+  align-items: center;
+  /* キャンディカラーの緑 */
+  background: #B9F6CA; 
+  padding: 10px 15px;
+  border-radius: 20px; /* 角をより丸くしてポップに */
+  gap: 15px;
+  font-size: 14px;
+  /* 文字色を背景に合う濃いグリーンに */
+  color: #2E7D32;
+  font-weight: 900;
+  /* 斜体は解除 */
+  font-style: normal;
+  /* ポップな雰囲気を出すためのフォント指定 */
+  font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+  /* お好みで影をつけるとよりキャンディ感が出ます */
+  box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
 }
 /* 背景スクロール用 */
 @keyframes bg-scroll {
@@ -275,12 +295,34 @@ canvas { border:solid .2em #fff; }
 @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
 #title-logo { width:90%; max-width:600px; margin-bottom:20px; }
 #title-btn-group { display:flex; justify-content:center; }
+#copyright {
+    color: #000;
+    text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff;
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+    font-size: 1.2em;
+    text-align: center;
+}
+.start-btn-img {
+    width: 280px;        /* 大きさを調整（必要に応じて変更） */
+    cursor: pointer;     /* マウスホバー時にポインターに変更 */
+    margin-bottom: 40px; /* 下のコピーライトとの間隔を確保 */
+    transition: transform 0.2s;
+}
+.start-btn-img:hover {
+    transform: scale(1.05); /* ホバー時に少し大きくして反応を良くする */
+}
+.mode-btn-img {
+    width: 80px;
+    height: auto;
+    cursor: pointer;
+    vertical-align: middle;
+    transition: transform 0.1s;
+}
+.mode-btn-img:active { transform: scale(0.95); }
 </style>
 </head>
 <body>
-<!--
-<h1><img src="./img/logo.png" width="360px" alt="もほもほ 模仿模仿 Moho-Moho"></h1>
--->
 <div id="guide-layer" onclick="hideGuide()">
     <div class="guide-text">
         タップかクリックしてね！<br>
@@ -289,13 +331,15 @@ canvas { border:solid .2em #fff; }
     </div>
 </div>
 <div id="title-modal">
-    <img id="title-logo" src="./img/logo.png" alt="もほもほ 模仿模仿 Moho-Moho">
+    <img id="title-logo" src="./img/logo_ani.gif" alt="もほもほ 模仿模仿 Moho-Moho">
     <div id="title-btn-group">
-        <button id="start-btn" onclick="startGame()">START</button>
+        <img src="./img/btn_start.png" alt="START" onclick="startGame()" class="start-btn-img">
     </div>
+    <div id="copyright">©2026 Factory Digital Entertainment</div>
 </div>
 <div id="stage-select-overlay">
-    <div id="stage-select-container">STAGE SELECT
+    <div id="stage-select-container">
+    	STAGE SELECT
 	    <div class="info-row">
 	        モードを選択してプレイ開始
 	    </div>
@@ -310,7 +354,10 @@ canvas { border:solid .2em #fff; }
 <div id="toast"></div>
 <div id="game-wrapper">
     <div id="ui-header">
-    	<button onclick="openStageSelect()">ステージ選択へ</button>
+		<div class="header-top">
+	        <span id="current-stage-title" class="header-title">></span>
+	        <img src="./img/btn_back.png" class="btn-back" onclick="openStageSelect()"><!-- ステージ選択へ戻る -->
+	    </div>
         <div class="flex-row">
             <span id="stat-mode">FIX: 0%</span>
         </div>
@@ -320,8 +367,8 @@ canvas { border:solid .2em #fff; }
         </div>
         <div class="stat-box">
             <span>Skip: <span id="stat-skip">0</span></span>
-            <span>NG Piece: <span id="stat-ng">0</span></span>
             <span>Chance Lost: <span id="stat-cl">0</span></span>
+            <span>NG Piece: <span id="stat-ng">0</span></span>
         </div>
     </div>
     <div class="canvas-container">
@@ -786,53 +833,57 @@ function openStageSelect() {
     // 初回のみタイトルとダミーをセット
     if (!document.getElementById('stage-select-title')) {
         container.innerHTML = `
-            <h2 id="stage-select-title">STAGE SELECT</h2>
-            <div class="info-row">モードを選択してプレイ開始</div>
+        	<div>
+	            <h2 id="stage-select-title">STAGE SELECT</h2>
+            </div>
             <div class="stage-row" style="opacity: 0.5; pointer-events: none;">
                 <div>Sample</div>
                 <canvas class="stage-thumb" width="64" height="53" style="background:#000;"></canvas>
                 <div class="mode-btns">
-                    <div class="mode-row"><button class="mode-btn">FIX</button><span class="check"></span><span>ミスしても大丈夫。100%模倣してクリア！</span></div>
-                    <div class="mode-row"><button class="mode-btn">SIMILAR</button><span class="check"></span><span>ミスしたブロックが残る。ちょいムズだよ！</span></div>
-                    <div class="mode-row"><button class="mode-btn">MIRROR</button><span class="check"></span><span>見本が左右反対になっている。激ムズだ！</span></div>
+					<div class="mode-row"><img src="./img/btn_fix.png" class="mode-btn-img"><span class="check"></span><span>ミスしても大丈夫。100%模倣してクリア！</span></div>
+					<div class="mode-row"><img src="./img/btn_similar.png" class="mode-btn-img"><span class="check"></span><span>ミスしたブロックが残る。ちょいムズだよ！</span></div>
+					<div class="mode-row"><img src="./img/btn_mirror.png" class="mode-btn-img"><span class="check"></span><span>見本が左右反対になっている。激ムズだ！</span></div>
                 </div>
             </div>
+            <div class="info-row">▼ 自動生成ステージ ／ Auto-Generated Stage ／ 生成關卡</div>
             <div id="generate-row-1" class="stage-row">
                 <div>Easy</div>
                 <canvas id="thumb-easy" class="stage-thumb" width="64" height="53"></canvas>
                 <div class="mode-btns">
-                    <div class="mode-row"><button class="mode-btn" onclick="selectGenerateStage('FIX', 1)">FIX</button><span class="check"></span><span>自動生成（Easyでカンタン）</span></div>
-                    <div class="mode-row"><button class="mode-btn" onclick="selectGenerateStage('SIMILAR', 1)">SIMILAR</button><span class="check"></span><span>自動生成（Easyでちょいムズ）</span></div>
-                    <div class="mode-row"><button class="mode-btn" onclick="selectGenerateStage('MIRROR', 1)">MIRROR</button><span class="check"></span><span>自動生成（Easyで左右反対で激ムズ）</span></div>
+                    <div class="mode-row"><img src="./img/btn_fix.png" class="mode-btn-img" onclick="selectGenerateStage('FIX', 1)"><span class="check"></span><span>自動生成（Easyでカンタン）</span></div>
+                    <div class="mode-row"><img src="./img/btn_similar.png" class="mode-btn-img" onclick="selectGenerateStage('SIMILAR', 1)"><span class="check"></span><span>自動生成（Easyでちょいムズ）</span></div>
+                    <div class="mode-row"><img src="./img/btn_mirror.png" class="mode-btn-img" onclick="selectGenerateStage('MIRROR', 1)"><span class="check"></span><span>自動生成（Easyで左右反対で激ムズ）</span></div>
                 </div>
             </div>
             <div id="generate-row-2" class="stage-row">
                 <div>Normal</div>
                 <canvas id="thumb-normal" class="stage-thumb" width="64" height="53"></canvas>
                 <div class="mode-btns">
-                    <div class="mode-row"><button class="mode-btn" onclick="selectGenerateStage('FIX', 2)">FIX</button><span class="check"></span><span>自動生成（Normalでカンタン）</span></div>
-                    <div class="mode-row"><button class="mode-btn" onclick="selectGenerateStage('SIMILAR', 2)">SIMILAR</button><span class="check"></span><span>自動生成（Normalでちょいムズ）</span></div>
-                    <div class="mode-row"><button class="mode-btn" onclick="selectGenerateStage('MIRROR', 2)">MIRROR</button><span class="check"></span><span>自動生成（Normalで左右反対で激ムズ）</span></div>
+                    <div class="mode-row"><img src="./img/btn_fix.png" class="mode-btn-img" onclick="selectGenerateStage('FIX', 2)"><span class="check"></span><span>自動生成（Easyでカンタン）</span></div>
+                    <div class="mode-row"><img src="./img/btn_similar.png" class="mode-btn-img" onclick="selectGenerateStage('SIMILAR', 2)"><span class="check"></span><span>自動生成（Easyでちょいムズ）</span></div>
+                    <div class="mode-row"><img src="./img/btn_mirror.png" class="mode-btn-img" onclick="selectGenerateStage('MIRROR', 2)"><span class="check"></span><span>自動生成（Easyで左右反対で激ムズ）</span></div>
                 </div>
             </div>
             <div id="generate-row-3" class="stage-row">
                 <div>Hard</div>
                 <canvas id="thumb-hard" class="stage-thumb" width="64" height="53"></canvas>
                 <div class="mode-btns">
-                    <div class="mode-row"><button class="mode-btn" onclick="selectGenerateStage('FIX', 3)">FIX</button><span class="check"></span><span>自動生成（Hardでカンタン）</span></div>
-                    <div class="mode-row"><button class="mode-btn" onclick="selectGenerateStage('SIMILAR', 3)">SIMILAR</button><span class="check"></span><span>自動生成（Hardでちょいムズ）</span></div>
-                    <div class="mode-row"><button class="mode-btn" onclick="selectGenerateStage('MIRROR', 3)">MIRROR</button><span class="check"></span><span>自動生成（Hardで左右反対で激ムズ）</span></div>
+                    <div class="mode-row"><img src="./img/btn_fix.png" class="mode-btn-img" onclick="selectGenerateStage('FIX', 3)"><span class="check"></span><span>自動生成（Easyでカンタン）</span></div>
+                    <div class="mode-row"><img src="./img/btn_similar.png" class="mode-btn-img" onclick="selectGenerateStage('SIMILAR', 3)"><span class="check"></span><span>自動生成（Easyでちょいムズ）</span></div>
+                    <div class="mode-row"><img src="./img/btn_mirror.png" class="mode-btn-img" onclick="selectGenerateStage('MIRROR', 3)"><span class="check"></span><span>自動生成（Easyで左右反対で激ムズ）</span></div>
                 </div>
             </div>
+            <div class="info-row">▼ ランダムステージ ／ Random Stage ／ 隨機關卡</div>
             <div id="random-row" class="stage-row">
                 <div>Random</div>
                 <canvas id="thumb-random" class="stage-thumb" width="64" height="53"></canvas>
                 <div class="mode-btns">
-                    <div class="mode-row"><button class="mode-btn" onclick="selectRandomStage('FIX')">FIX</button><span class="check"></span><span>ランダムステージ（カンタン）</span></div>
-                    <div class="mode-row"><button class="mode-btn" onclick="selectRandomStage('SIMILAR')">SIMILAR</button><span class="check"></span><span>ランダムステージ（ちょいムズ）</span></div>
-                    <div class="mode-row"><button class="mode-btn" onclick="selectRandomStage('MIRROR')">MIRROR</button><span class="check"></span><span>ランダムステージ（左右反対で激ムズ）</span></div>
+                    <div class="mode-row"><img src="./img/btn_fix.png" class="mode-btn-img" onclick="selectRandomStage('FIX')"><span class="check"></span><span>ランダムステージ（カンタン）</span></div>
+                    <div class="mode-row"><img src="./img/btn_similar.png" class="mode-btn-img" onclick="selectRandomStage('SIMILAR')"><span class="check"></span><span>ランダムステージ（ちょいムズ）</span></div>
+                    <div class="mode-row"><img src="./img/btn_mirror.png" class="mode-btn-img" onclick="selectRandomStage('MIRROR')"><span class="check"></span><span>ランダムステージ（左右反対で激ムズ）</span></div>
                 </div>
             </div>
+            <div class="info-row">▼ メインステージ ／ Main Stage ／ 主關卡</div>
         `;
         if(!generatedStageEasy)generatedStageEasy=generateStageData(1);
 		if(!generatedStageNormal)generatedStageNormal=generateStageData(2);
@@ -856,9 +907,9 @@ function openStageSelect() {
             <div>${String(i+1).padStart(3, '0')}</div>
             <canvas id="thumb-${i}" class="stage-thumb" width="64" height="53"></canvas>
             <div class="mode-btns">
-                <div class="mode-row"><button class="mode-btn" onclick="selectStage(${i},'FIX')">FIX</button><span class="check"></span><span>--</span></div>
-                <div class="mode-row"><button class="mode-btn" onclick="selectStage(${i},'SIMILAR')">SIMILAR</button><span class="check"></span><span>--</span></div>
-                <div class="mode-row"><button class="mode-btn" onclick="selectStage(${i},'MIRROR')">MIRROR</button><span class="check"></span><span>--</span></div>
+                <div class="mode-row"><img src="./img/btn_fix.png" class="mode-btn-img" onclick="selectStage(${i},'FIX')"><span class="check"></span><span>--</span></div>
+                <div class="mode-row"><img src="./img/btn_similar.png" class="mode-btn-img" onclick="selectStage(${i},'SIMILAR')"><span class="check"></span><span>--</span></div>
+                <div class="mode-row"><img src="./img/btn_mirror.png" class="mode-btn-img" onclick="selectStage(${i},'MIRROR')"><span class="check"></span><span>--</span></div>
             </div>
         `;
         container.appendChild(div);
@@ -874,11 +925,15 @@ function openStageSelect() {
             ctx.fillRect(x,y,1,1); 
         }));
     });
+    // 保存済み記録を反映
+    updateStageSelectRecords();
     overlay.style.display = 'flex'; // blockではなくflexで中央寄せ
 }
 
 function selectStage(idx, mode) {
     document.getElementById('stage-select-overlay').style.display = 'none';
+    isRandomStage = false;
+    currentStageIndex = idx;
     currentStage = stages[idx];
     currentGameMode = GAME_MODE[mode];
     // ゲーム変数の初期化
@@ -936,10 +991,14 @@ let queueList=[];
 //ゲーム設定・統計管理
 const GAME_MODE = { FIX: 'FIX', SIMILAR: 'SIMILAR', MIRROR: 'MIRROR' };
 let currentGameMode = GAME_MODE.FIX;
+// ランダムステージかどうか
+let isRandomStage = false;
 const gameStat={
     score:0,
     ng:0,
-    chanceLost:0
+    chanceLost:0,
+    skipCount:0,
+    time:0
 };
 
 // 実際のゲームフィールド（12x20）の行列データ
@@ -1606,6 +1665,30 @@ function handleSkip(){
 // ゲームオーバー状態を管理するフラグ
 let gameOver = false;
 
+// プレイ開始時刻（performance.now()）
+let gameStartTime = 0;
+
+// ========================================
+// SaveData Version1
+// ========================================
+
+// SaveDataフォーマットバージョン
+const SAVE_VERSION="A";
+
+// 1ステージ当たりのビット数
+const SAVE_BITS={
+    FIX:30,
+    SIMILAR:37,
+    MIRROR:37,
+    TOTAL:104
+};
+
+// URL保存用データ
+let saveData={
+    version:SAVE_VERSION,
+    stages:[]
+};
+
 /**
  * 統計情報を計算し、HTML要素を更新する
  */
@@ -1639,6 +1722,7 @@ function resetGame() {
 	queueList=[];
 	fillQueue();
     // プレイヤー位置と操作ピースの初期化
+    document.getElementById('current-stage-title').innerText = currentStage.title || ""; //ステージタイトル
     player.pos.y = 0;
     player.pos.x = lastX;
     player.matrix = spawnPiece();
@@ -1648,6 +1732,11 @@ function resetGame() {
 	gameStat.ng=0;
 	gameStat.chanceLost=0;
 	gameStat.skipCount=0;
+	gameStat.time=0;
+
+	// プレイ開始
+	gameStartTime=performance.now();
+
 	updateUI();
     // フラグとループの再設定
     gameOver = false;
@@ -1679,14 +1768,24 @@ function showWarning(text){
 function checkGameEnd(){
     const total = (currentStage.width * currentStage.height) / 4;
     if(currentGameMode === GAME_MODE.FIX && gameStat.score >= total){
-    	dropEffect = null;
-        gameOver = true;
-        draw(); // 最後にもう一度描画を強制
-        setTimeout(() => showResultOverlay("FIX", 100), 100); // 描画後に表示
-    }else if((currentGameMode === GAME_MODE.MIRROR && (gameStat.score + gameStat.ng) >= total) || (currentGameMode === GAME_MODE.SIMILAR && (gameStat.score + gameStat.ng) >= total)){
-        gameOver = true;
-        draw();
-        const modeTitle = (currentGameMode === GAME_MODE.MIRROR) ? "Mirror" : "Similar";
+	    dropEffect = null;
+	    gameOver = true;
+
+	    // プレイ時間を確定
+	    gameStat.time = Math.floor((performance.now() - gameStartTime) / 1000);
+
+	    draw(); // 最後にもう一度描画を強制
+	    updateStageRecord();
+	    setTimeout(() => showResultOverlay("FIX", 100), 100); // 描画後に表示
+	}else if((currentGameMode === GAME_MODE.MIRROR && (gameStat.score + gameStat.ng) >= total) || (currentGameMode === GAME_MODE.SIMILAR && (gameStat.score + gameStat.ng) >= total)){
+	    gameOver = true;
+
+	    // プレイ時間を確定
+	    gameStat.time = Math.floor((performance.now() - gameStartTime) / 1000);
+
+	    draw();
+	    updateStageRecord();
+	    const modeTitle = (currentGameMode === GAME_MODE.MIRROR) ? "Mirror" : "Similar";
         setTimeout(() => {
             const percent = Math.floor((gameStat.score / total) * 100);
             showResultOverlay(modeTitle, percent === 100 ? 100 : percent);
@@ -1712,8 +1811,13 @@ function setMode(mode) {
  * @param {string} mode - 'FIX', 'SIMILAR', 'MIRROR' のいずれか
  */
 function selectRandomStage(mode) {
+    document.getElementById('stage-select-overlay').style.display = 'none';
     const randomIndex = Math.floor(Math.random() * stages.length);
-    selectStage(randomIndex, mode);
+    isRandomStage = true;
+    currentStageIndex = randomIndex;
+    currentStage = stages[randomIndex];
+    currentGameMode = GAME_MODE[mode];
+    resetGame();
 }
 
 /**
@@ -1754,6 +1858,7 @@ function generateStageData(level) {
  * @param {number} level - 1 (Easy), 2 (Normal), 3 (Hard)
  */
 function selectGenerateStage(mode,level=3){
+	isRandomStage = false;
     let stageData;
     if(level===1) stageData=generatedStageEasy;
     else if(level===2) stageData=generatedStageNormal;
@@ -1815,6 +1920,371 @@ window.addEventListener('DOMContentLoaded',()=>{
     drawGenerateThumb('thumb-normal',generatedStageNormal);
     drawGenerateThumb('thumb-hard',generatedStageHard);
 });
+
+// SaveData初期化
+function initializeSaveData(){
+    saveData.stages=[];
+    for(let i=0;i<stages.length;i++){
+        saveData.stages.push({
+            fix:{
+                played:false,
+                time:0,
+                skip:0,
+                ng:0
+            },
+            similar:{
+                played:false,
+                rate:0,
+                time:0,
+                skip:0,
+                ng:0
+            },
+            mirror:{
+                played:false,
+                rate:0,
+                time:0,
+                skip:0,
+                ng:0
+            }
+        });
+    }
+}
+
+initializeSaveData();
+
+// ========================================
+// BitWriter
+// ========================================
+class BitWriter{
+    constructor(){
+        this.bits=[];
+    }
+    writeBits(value,length){
+        for(let i=length-1;i>=0;i--){
+            this.bits.push((value>>i)&1);
+        }
+    }
+    toUint8Array(){
+        const bytes=new Uint8Array(Math.ceil(this.bits.length/8));
+        for(let i=0;i<this.bits.length;i++){
+            if(this.bits[i]){
+                bytes[i>>3]|=(1<<(7-(i&7)));
+            }
+        }
+        return bytes;
+    }
+}
+
+// ========================================
+// BitReader
+// ========================================
+class BitReader{
+    constructor(bytes){
+        this.bytes=bytes;
+        this.position=0;
+    }
+    readBits(length){
+        let value=0;
+        for(let i=0;i<length;i++){
+            const byte=this.bytes[this.position>>3];
+            const bit=(byte>>(7-(this.position&7)))&1;
+            value=(value<<1)|bit;
+            this.position++;
+        }
+        return value;
+    }
+}
+
+// ========================================
+// Base64URL Encoder / Decoder
+// ========================================
+function uint8ArrayToBase64URL(bytes){
+    let binary="";
+    bytes.forEach(b=>binary+=String.fromCharCode(b));
+
+    return btoa(binary)
+        .replace(/\+/g,"-")
+        .replace(/\//g,"_")
+        .replace(/=+$/,"");
+}
+function base64URLToUint8Array(text){
+    let base64=text
+        .replace(/-/g,"+")
+        .replace(/_/g,"/");
+    while(base64.length%4){
+        base64+="=";
+    }
+    const binary=atob(base64);
+    const bytes=new Uint8Array(binary.length);
+    for(let i=0;i<binary.length;i++){
+        bytes[i]=binary.charCodeAt(i);
+    }
+    return bytes;
+}
+
+// ========================================
+// SaveData Version Header
+// ========================================
+function encodeSaveBytes(bytes){
+    return SAVE_VERSION+uint8ArrayToBase64URL(bytes);
+}
+
+function decodeSaveBytes(text){
+    if(!text||text.length<2)return null;
+    const version=text.charAt(0);
+    if(version!==SAVE_VERSION){
+        console.warn("Unknown Save Version:",version);
+        return null;
+    }
+    return base64URLToUint8Array(text.substring(1));
+}
+
+// ========================================
+// SaveData → BitStream
+// ========================================
+function saveDataToBytes(){
+    const writer=new BitWriter();
+    saveData.stages.forEach(stage=>{
+        // FIX
+        writer.writeBits(stage.fix.played?1:0,1);
+        writer.writeBits(stage.fix.time,12);
+        writer.writeBits(stage.fix.skip,10);
+        writer.writeBits(stage.fix.ng,7);
+        // SIMILAR
+        writer.writeBits(stage.similar.played?1:0,1);
+        writer.writeBits(stage.similar.rate,7);
+        writer.writeBits(stage.similar.time,12);
+        writer.writeBits(stage.similar.skip,10);
+        writer.writeBits(stage.similar.ng,7);
+        // MIRROR
+        writer.writeBits(stage.mirror.played?1:0,1);
+        writer.writeBits(stage.mirror.rate,7);
+        writer.writeBits(stage.mirror.time,12);
+        writer.writeBits(stage.mirror.skip,10);
+        writer.writeBits(stage.mirror.ng,7);
+    });
+    return writer.toUint8Array();
+}
+
+// ========================================
+// BitStream → SaveData
+// ========================================
+function loadSaveDataFromBytes(bytes){
+    const reader=new BitReader(bytes);
+    saveData.stages=[];
+    for(let i=0;i<stages.length;i++){
+        saveData.stages.push({
+            fix:{
+                played:!!reader.readBits(1),
+                time:reader.readBits(12),
+                skip:reader.readBits(10),
+                ng:reader.readBits(7)
+            },
+            similar:{
+                played:!!reader.readBits(1),
+                rate:reader.readBits(7),
+                time:reader.readBits(12),
+                skip:reader.readBits(10),
+                ng:reader.readBits(7)
+            },
+            mirror:{
+                played:!!reader.readBits(1),
+                rate:reader.readBits(7),
+                time:reader.readBits(12),
+                skip:reader.readBits(10),
+                ng:reader.readBits(7)
+            }
+        });
+    }
+}
+
+// ========================================
+// SaveData Serialize
+// ========================================
+function exportSaveData(){
+    return encodeSaveBytes(saveDataToBytes());
+}
+
+function importSaveData(text){
+    const bytes=decodeSaveBytes(text);
+    if(!bytes){
+        return false;
+    }
+    loadSaveDataFromBytes(bytes);
+    return true;
+}
+
+// ========================================
+// Record Update
+// ========================================
+function getCurrentRecord(){
+    const time=Math.min(gameStat.time||0,3599);
+    const skip=Math.min(gameStat.skipCount||0,999);
+    const ng=Math.min(gameStat.ng||0,99);
+    if(currentGameMode===GAME_MODE.FIX){
+        return{
+            played:true,
+            time,
+            skip,
+            ng
+        };
+    }
+    const total=(currentStage.width*currentStage.height)/4;
+    const rate=Math.min(100,Math.floor((gameStat.score/total)*100));
+    return{
+        played:true,
+        rate,
+        time,
+        skip,
+        ng
+    };
+}
+
+function isBetterFix(oldRec,newRec){
+    if(!oldRec.played)return true;
+    if(newRec.time!==oldRec.time)return newRec.time<oldRec.time;
+    if(newRec.skip!==oldRec.skip)return newRec.skip<oldRec.skip;
+    return newRec.ng<oldRec.ng;
+}
+
+function isBetterScore(oldRec,newRec){
+    if(!oldRec.played)return true;
+    if(newRec.rate!==oldRec.rate)return newRec.rate>oldRec.rate;
+    if(newRec.time!==oldRec.time)return newRec.time<oldRec.time;
+    if(newRec.skip!==oldRec.skip)return newRec.skip<oldRec.skip;
+    return newRec.ng<oldRec.ng;
+}
+
+
+function updateStageRecord(){
+    // ランダムステージは保存しない
+    if(isRandomStage){
+        return false;
+    }
+    // 自動生成ステージは保存しない
+    if(currentStage!==stages[currentStageIndex]){
+        return false;
+    }
+    const record=getCurrentRecord();
+    const stage=saveData.stages[currentStageIndex];
+    let updated=false;
+    if(currentGameMode===GAME_MODE.FIX){
+        if(isBetterFix(stage.fix,record)){
+            stage.fix=record;
+            updated=true;
+        }
+    }else if(currentGameMode===GAME_MODE.SIMILAR){
+        if(isBetterScore(stage.similar,record)){
+            stage.similar=record;
+            updated=true;
+        }
+    }else if(currentGameMode===GAME_MODE.MIRROR){
+        if(isBetterScore(stage.mirror,record)){
+            stage.mirror=record;
+            updated=true;
+        }
+    }
+    if(updated){
+        saveToURL();
+    }
+    return updated;
+}
+
+// ========================================
+// URL Save
+// ========================================
+function saveToURL(){
+    const url=new URL(location.href);
+    url.searchParams.set("save",exportSaveData());
+    history.replaceState(null,"",url);
+}
+
+// ========================================
+// URL Load
+// ========================================
+function loadFromURL(){
+	//console.log("loadFromURL");
+	//console.log("stages.length =", stages.length);
+    const params=new URLSearchParams(location.search);
+    const save=params.get("save");
+    if(!save){
+        return false;
+    }
+    return importSaveData(save);
+}
+
+// URLからSaveData復元（この位置での記述が重要）
+loadFromURL();
+
+/**
+ * 秒数を mm:ss 形式へ変換
+ */
+function formatTime(seconds){
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+}
+
+/**
+ * Perfect判定（★表示用）
+ * FIXモード：　NGが0件でクリアしていれば★。 Similarモード：　100%でクリアしていれば★。 Mirrorモード：　100%でクリアしていれば★。
+ */
+function isPerfectClear(mode, record){
+    if(!record.played) return false;
+    if(mode === GAME_MODE.FIX){
+        return record.ng === 0;
+    }
+    return record.rate === 100;
+}
+
+/**
+ * ステージ選択画面へ保存記録を反映する
+ */
+function updateStageSelectRecords(){
+    saveData.stages.forEach((stage,index)=>{
+        const row=document.getElementById(`row-${index}`);
+        //console.log("index", index);
+		//console.log("row", row);
+        if(!row)return;
+        const rows = row.querySelectorAll(".mode-row");
+		//console.log("rows.length", rows.length);
+		//console.log(rows);
+		const list = [
+		    stage.fix,
+		    stage.similar,
+		    stage.mirror
+		];
+
+		list.forEach((record, i) => {
+		    const spans = rows[i].querySelectorAll("span");
+			const check = spans[0];
+			const text = spans[1];
+			
+			let star = "";
+
+			if (i === 0) {
+			    if (record.played && record.ng === 0) star = "★";
+			} else {
+			    if (record.played && record.rate === 100) star = "★";
+			}
+
+			check.textContent = star;
+
+		    if (!record.played) {
+		        text.textContent = "--";
+		        return;
+		    }
+
+		    if (i === 0) {
+		        text.textContent =
+		            `${formatTime(record.time)} / S${record.skip} / N${record.ng}`;
+		    } else {
+		        text.textContent =
+		            `${record.rate}% / ${formatTime(record.time)} / S${record.skip} / N${record.ng}`;
+		    }
+		});
+    });
+}
 
 // スマホ対策でブラウザ操作禁止（ステージ選択のスクロールは有効のまま）
 document.addEventListener("contextmenu",e=>{
