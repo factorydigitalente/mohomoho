@@ -194,6 +194,13 @@ canvas { border:solid .2em #fff; }
     letter-spacing:2px;
     margin:0 0 10px;
 }
+h3 {
+    font-size:18px;
+    color:#fff;
+    text-shadow:0 2px 8px green;
+    letter-spacing:1px;
+    margin:0 0 10px;
+}
 .stage-row{
     display:flex;
     align-items:center;
@@ -209,7 +216,7 @@ canvas { border:solid .2em #fff; }
 .stage-row > div:first-child { font-weight:bold; width: 50px; }
 .mode-btn { font-weight:bold; padding:2px 8px; font-size:10px; cursor:pointer; flex: 0 0 80px; text-align:center; }
 
-.stage-thumb { width:64px; height:53px; border:1px solid #fff; }
+.stage-thumb { width:64px; height:80px; border:1px solid #fff; }
 .mode-btns { display:flex; flex-direction:column; gap:4px; }
 .mode-row { display:flex; align-items:center; gap:8px; font-size:12px; width: 100%; flex-wrap: nowrap; white-space: nowrap; }
 .mode-row span { font-weight: 800; }
@@ -313,13 +320,16 @@ canvas { border:solid .2em #fff; }
     transform: scale(1.05); /* ホバー時に少し大きくして反応を良くする */
 }
 .mode-btn-img {
-    width: 80px;
+    width: 100px;
     height: auto;
     cursor: pointer;
     vertical-align: middle;
     transition: transform 0.1s;
 }
 .mode-btn-img:active { transform: scale(0.95); }
+.mode-btn-img:hover {
+    transform: scale(1.05); /* ホバー時に少し大きくして反応を良くする */
+}
 </style>
 </head>
 <body>
@@ -339,7 +349,7 @@ canvas { border:solid .2em #fff; }
 </div>
 <div id="stage-select-overlay">
     <div id="stage-select-container">
-    	STAGE SELECT
+    	STAGE & MODE SELECT
 	    <div class="info-row">
 	        モードを選択してプレイ開始
 	    </div>
@@ -829,58 +839,68 @@ const stages = [stage1, stage2, stage3, stage4, stage5, stage6, stage7, stage8, 
 function openStageSelect() {
     const overlay = document.getElementById('stage-select-overlay');
     const container = document.getElementById('stage-select-container');
+    const randomThumbImg = new Image();
+    randomThumbImg.src = './img/thumb_randam.jpg';
     
     // 初回のみタイトルとダミーをセット
     if (!document.getElementById('stage-select-title')) {
+        // ランダムサムネイルの描画準備
+        randomThumbImg.onload = () => {
+            const rc = document.getElementById('thumb-random');
+            if (rc) rc.getContext('2d').drawImage(randomThumbImg, 0, 0, 64, 80);
+        };
         container.innerHTML = `
         	<div>
-	            <h2 id="stage-select-title">STAGE SELECT</h2>
+	            <h2 id="stage-select-title">STAGE & MODE SELECT</h2>
+	            <h3>「もほもほ」は完成図を見ながら色ブロックを配置していくパズルだよ！</h3>
+	            <h3>「模仿模仿」是一個看著完成圖來配置顏色方塊的拼圖遊戲！</h3>
+	            <h3>"Moho-Moho" is a puzzle game where you place color blocks while looking at the completed image!</h3>
             </div>
-            <div class="stage-row" style="opacity: 0.5; pointer-events: none;">
+            <div class="stage-row" style="opacity: 0.8; pointer-events: none;">
                 <div>Sample</div>
-                <canvas class="stage-thumb" width="64" height="53" style="background:#000;"></canvas>
+                <canvas class="stage-thumb" width="64" height="80" style="background:#000;"></canvas>
                 <div class="mode-btns">
-					<div class="mode-row"><img src="./img/btn_fix.png" class="mode-btn-img"><span class="check"></span><span>ミスしても大丈夫。100%模倣してクリア！</span></div>
-					<div class="mode-row"><img src="./img/btn_similar.png" class="mode-btn-img"><span class="check"></span><span>ミスしたブロックが残る。ちょいムズだよ！</span></div>
-					<div class="mode-row"><img src="./img/btn_mirror.png" class="mode-btn-img"><span class="check"></span><span>見本が左右反対になっている。激ムズだ！</span></div>
+					<div class="mode-row"><img src="./img/btn_fix.png" style="filter: grayscale(100%);" class="mode-btn-img"><span class="check"></span><span>Let's Exact Match! ゲームオーバーなし。100%でクリア！</span></div>
+					<div class="mode-row"><img src="./img/btn_similar.png" style="filter: grayscale(100%);" class="mode-btn-img"><span class="check"></span><span>As Possible Match! ミスしたブロックが残る。ちょいムズ！</span></div>
+					<div class="mode-row"><img src="./img/btn_mirror.png" style="filter: grayscale(100%);" class="mode-btn-img"><span class="check"></span><span>Reflection Match! 見本が左右反対だぞ。激ムズだ！</span></div>
                 </div>
             </div>
             <div class="info-row">▼ 自動生成ステージ ／ Auto-Generated Stage ／ 生成關卡</div>
             <div id="generate-row-1" class="stage-row">
                 <div>Easy</div>
-                <canvas id="thumb-easy" class="stage-thumb" width="64" height="53"></canvas>
+                <canvas id="thumb-easy" class="stage-thumb" width="64" height="80"></canvas>
                 <div class="mode-btns">
-                    <div class="mode-row"><img src="./img/btn_fix.png" class="mode-btn-img" onclick="selectGenerateStage('FIX', 1)"><span class="check"></span><span>自動生成（Easyでカンタン）</span></div>
-                    <div class="mode-row"><img src="./img/btn_similar.png" class="mode-btn-img" onclick="selectGenerateStage('SIMILAR', 1)"><span class="check"></span><span>自動生成（Easyでちょいムズ）</span></div>
-                    <div class="mode-row"><img src="./img/btn_mirror.png" class="mode-btn-img" onclick="selectGenerateStage('MIRROR', 1)"><span class="check"></span><span>自動生成（Easyで左右反対で激ムズ）</span></div>
+                    <div class="mode-row"><img src="./img/btn_fix.png" class="mode-btn-img" onclick="selectGenerateStage('FIX', 1)"><span class="check"></span><span>Level：★</span></div>
+                    <div class="mode-row"><img src="./img/btn_similar.png" class="mode-btn-img" onclick="selectGenerateStage('SIMILAR', 1)"><span class="check"></span><span>Level：★★★★★</span></div>
+                    <div class="mode-row"><img src="./img/btn_mirror.png" class="mode-btn-img" onclick="selectGenerateStage('MIRROR', 1)"><span class="check"></span><span>Level：★★★★★★★★</span></div>
                 </div>
             </div>
             <div id="generate-row-2" class="stage-row">
                 <div>Normal</div>
-                <canvas id="thumb-normal" class="stage-thumb" width="64" height="53"></canvas>
+                <canvas id="thumb-normal" class="stage-thumb" width="64" height="80"></canvas>
                 <div class="mode-btns">
-                    <div class="mode-row"><img src="./img/btn_fix.png" class="mode-btn-img" onclick="selectGenerateStage('FIX', 2)"><span class="check"></span><span>自動生成（Easyでカンタン）</span></div>
-                    <div class="mode-row"><img src="./img/btn_similar.png" class="mode-btn-img" onclick="selectGenerateStage('SIMILAR', 2)"><span class="check"></span><span>自動生成（Easyでちょいムズ）</span></div>
-                    <div class="mode-row"><img src="./img/btn_mirror.png" class="mode-btn-img" onclick="selectGenerateStage('MIRROR', 2)"><span class="check"></span><span>自動生成（Easyで左右反対で激ムズ）</span></div>
+                    <div class="mode-row"><img src="./img/btn_fix.png" class="mode-btn-img" onclick="selectGenerateStage('FIX', 2)"><span class="check"></span><span>Level：★★★</span></div>
+                    <div class="mode-row"><img src="./img/btn_similar.png" class="mode-btn-img" onclick="selectGenerateStage('SIMILAR', 2)"><span class="check"></span><span>Level：★★★★★★</span></div>
+                    <div class="mode-row"><img src="./img/btn_mirror.png" class="mode-btn-img" onclick="selectGenerateStage('MIRROR', 2)"><span class="check"></span><span>Level：★★★★★★★★★</span></div>
                 </div>
             </div>
             <div id="generate-row-3" class="stage-row">
                 <div>Hard</div>
-                <canvas id="thumb-hard" class="stage-thumb" width="64" height="53"></canvas>
+                <canvas id="thumb-hard" class="stage-thumb" width="64" height="80"></canvas>
                 <div class="mode-btns">
-                    <div class="mode-row"><img src="./img/btn_fix.png" class="mode-btn-img" onclick="selectGenerateStage('FIX', 3)"><span class="check"></span><span>自動生成（Easyでカンタン）</span></div>
-                    <div class="mode-row"><img src="./img/btn_similar.png" class="mode-btn-img" onclick="selectGenerateStage('SIMILAR', 3)"><span class="check"></span><span>自動生成（Easyでちょいムズ）</span></div>
-                    <div class="mode-row"><img src="./img/btn_mirror.png" class="mode-btn-img" onclick="selectGenerateStage('MIRROR', 3)"><span class="check"></span><span>自動生成（Easyで左右反対で激ムズ）</span></div>
+                    <div class="mode-row"><img src="./img/btn_fix.png" class="mode-btn-img" onclick="selectGenerateStage('FIX', 3)"><span class="check"></span><span>Level：★★★★</span></div>
+                    <div class="mode-row"><img src="./img/btn_similar.png" class="mode-btn-img" onclick="selectGenerateStage('SIMILAR', 3)"><span class="check"></span><span>Level：★★★★★★★</span></div>
+                    <div class="mode-row"><img src="./img/btn_mirror.png" class="mode-btn-img" onclick="selectGenerateStage('MIRROR', 3)"><span class="check"></span><span>Level：★★★★★★★★★★</span></div>
                 </div>
             </div>
             <div class="info-row">▼ ランダムステージ ／ Random Stage ／ 隨機關卡</div>
             <div id="random-row" class="stage-row">
-                <div>Random</div>
-                <canvas id="thumb-random" class="stage-thumb" width="64" height="53"></canvas>
-                <div class="mode-btns">
-                    <div class="mode-row"><img src="./img/btn_fix.png" class="mode-btn-img" onclick="selectRandomStage('FIX')"><span class="check"></span><span>ランダムステージ（カンタン）</span></div>
-                    <div class="mode-row"><img src="./img/btn_similar.png" class="mode-btn-img" onclick="selectRandomStage('SIMILAR')"><span class="check"></span><span>ランダムステージ（ちょいムズ）</span></div>
-                    <div class="mode-row"><img src="./img/btn_mirror.png" class="mode-btn-img" onclick="selectRandomStage('MIRROR')"><span class="check"></span><span>ランダムステージ（左右反対で激ムズ）</span></div>
+            <div style="font-size:0.9em;">Random</div>
+            <canvas id="thumb-random" class="stage-thumb" width="64" height="80" ${randomThumbImg.complete ? `style="background-image:url(${randomThumbImg.src})"` : ""}></canvas>
+            <div class="mode-btns">
+                    <div class="mode-row"><img src="./img/btn_fix.png" class="mode-btn-img" onclick="selectRandomStage('FIX')"><span class="check"></span><span>Level：？？？</span></div>
+                    <div class="mode-row"><img src="./img/btn_similar.png" class="mode-btn-img" onclick="selectRandomStage('SIMILAR')"><span class="check"></span><span>Level：？？？</span></div>
+                    <div class="mode-row"><img src="./img/btn_mirror.png" class="mode-btn-img" onclick="selectRandomStage('MIRROR')"><span class="check"></span><span>Level：？？？</span></div>
                 </div>
             </div>
             <div class="info-row">▼ メインステージ ／ Main Stage ／ 主關卡</div>
@@ -905,7 +925,7 @@ function openStageSelect() {
         div.id = `row-${i}`; // 行にIDを付与
         div.innerHTML = `
             <div>${String(i+1).padStart(3, '0')}</div>
-            <canvas id="thumb-${i}" class="stage-thumb" width="64" height="53"></canvas>
+            <canvas id="thumb-${i}" class="stage-thumb" width="64" height="80"></canvas>
             <div class="mode-btns">
                 <div class="mode-row"><img src="./img/btn_fix.png" class="mode-btn-img" onclick="selectStage(${i},'FIX')"><span class="check"></span><span>--</span></div>
                 <div class="mode-row"><img src="./img/btn_similar.png" class="mode-btn-img" onclick="selectStage(${i},'SIMILAR')"><span class="check"></span><span>--</span></div>
@@ -918,11 +938,12 @@ function openStageSelect() {
         const canvas = document.getElementById(`thumb-${i}`);
         const ctx = canvas.getContext('2d');
         ctx.fillStyle = '#000';
-        ctx.fillRect(0,0,64,53);
-        ctx.scale(64/s.width, 53/s.height);
+        ctx.fillRect(0,0,64,80);
+        ctx.scale(64/s.width, 80/s.height);
         s.data.forEach((r,y) => r.forEach((v,x) => { 
-            ctx.fillStyle = ['#a0a0a0','#ff6b81','#7ed957','#3a86ff','#ffe066','#ffffff'][v] || '#333'; 
-            ctx.fillRect(x,y,1,1); 
+            ctx.fillStyle = ['#a0a0a0','#ff6b81','#7ed957','#3a86ff','#ffe066','#ffffff'][v] || '#333';
+            // 1.15 にすることで隣接ピクセルを覆い、隙間による線を目立たなくする
+            ctx.fillRect(x,y,1.15,1.15); 
         }));
     });
     // 保存済み記録を反映
@@ -1147,7 +1168,8 @@ function drawPreview(stageData) {
 	stageData.data.forEach((row, y) => {
 		row.forEach((value, x) => {
             pCtx.fillStyle = colors[value];
-            pCtx.fillRect(x, y, 1, 1);
+            // 1.1 にすることで隣接ピクセルを覆い、隙間による線を目立たなくする
+            pCtx.fillRect(x, y, 1.1, 1.1);
         });
     });
     // Mirrorモード時は左右反転レイヤーを重ねる
@@ -1176,12 +1198,16 @@ function drawPreview(stageData) {
 const bgImage = new Image();
 bgImage.src = './img/game_bg.jpg';
 
+// ステージ選択画面のランダムモードサムネイル画像をグローバルでロードしておく
+const randomThumbImg = new Image();
+randomThumbImg.src = './img/thumb_randam.jpg';
+
 /**
  * ゲーム画面、プレビュー、待機列のすべての描画を行うメインループ関数
  */
 function draw() {
     // 1. 背景画像の描画（塗りつぶしの代わりに配置）
-    
+
 	// スケールをリセットして背景を描画
     context.save();
     context.setTransform(1, 0, 0, 1, 0, 0); // 16倍スケールを一旦解除
@@ -1196,18 +1222,28 @@ function draw() {
     context.restore();
 
     // 2. グリッドの描画（2x2ブロック単位を強調）
-    // 縦線
-    for (let i = 0; i <= 12; i++) {
-        context.lineWidth = (i % 2 === 0) ? 0.10 : 0.03;
-        context.strokeStyle = '#974b00'; // オレンジ系に変更
-        context.beginPath(); context.moveTo(i, 0); context.lineTo(i, 20); context.stroke();
-    }
-    // 横線
-    for (let i = 0; i <= 20; i++) {
-        context.lineWidth = (i % 2 === 0) ? 0.10 : 0.03;
-        context.strokeStyle = '#974b00'; // オレンジ系に変更
-        context.beginPath(); context.moveTo(0, i); context.lineTo(12, i); context.stroke();
-    }
+	// 縦線（偶数番目のみ引く）
+	for (let i = 0; i <= 12; i++) {
+	    if (i % 2 === 0) {
+	        context.lineWidth = 0.10;
+	        context.strokeStyle = '#974b00'; // オレンジ系
+	        context.beginPath(); 
+	        context.moveTo(i, 0); 
+	        context.lineTo(i, 20); 
+	        context.stroke();
+	    }
+	}
+	// 横線（偶数番目のみ引く）
+	for (let i = 0; i <= 20; i++) {
+	    if (i % 2 === 0) {
+	        context.lineWidth = 0.10;
+	        context.strokeStyle = '#974b00'; // オレンジ系
+	        context.beginPath(); 
+	        context.moveTo(0, i); 
+	        context.lineTo(12, i); 
+	        context.stroke();
+	    }
+	}
     // 完成ライン（上部余白とゲームエリアの境界） (y=4)
     context.lineWidth = 0.2;
     context.strokeStyle = '#0af';
@@ -1282,14 +1318,14 @@ function draw() {
             // 先頭のピースは大きく描画
             qCtx.scale(0.9, 0.9);
             // 待機列内のピース位置を計算（倍率0.75で補正）
-            // 先頭は丸みを0.5と強めに設定
-            drawMatrix(piece,{x:(0.75+col*1.8)/0.75,y:(0.3+row*1.5)/0.75},qCtx, false, 0.5);
+            // 先頭は丸みを0.8に設定
+            drawMatrix(piece,{x:(0.75+col*1.8)/0.75,y:(0.3+row*1.5)/0.75},qCtx, false, 0.8);
         }else{
             // ブロックをより小さく設定
             qCtx.scale(0.6, 0.6);
             // 待機列内のピース位置を計算し、枠の左上に寄せつつ、間隔xとyを調整し、倍率0.6に合わせて補正
-            // それ以外は丸みを0.4に設定
-            drawMatrix(piece,{x:(1.4+col*2.6)/0.7,y:(0.7+row*1.8)/0.6},qCtx, false, 0.4);
+            // 丸みを0.8に設定
+            drawMatrix(piece,{x:(1.4+col*2.6)/0.7,y:(0.7+row*1.8)/0.6},qCtx, false, 0.8);
         }
         qCtx.restore();
     }
@@ -1321,7 +1357,7 @@ function drawMatrix(pieceData, offset, ctx = context, isFalling = false, roundRa
     if(isFalling || roundRadius > 0){
         // roundRadius処理時は既にsaveされているため、ここでのsaveは削除
         //r: 丸みの半径（0.0〜1.0の間で指定。大きいほど丸みが強くなる）
-        drawRoundedBlock(ctx, offset.x, offset.y, isFalling ? 0.4 : roundRadius);
+        drawRoundedBlock(ctx, offset.x, offset.y, isFalling ? 0.8 : roundRadius);
         ctx.clip();
     }
     matrix.forEach((row, y) => {
@@ -1329,37 +1365,37 @@ function drawMatrix(pieceData, offset, ctx = context, isFalling = false, roundRa
 			// 数値が-1（何もない＝背景）以外の場合のみ描画。
             if (value !== -1) {
                 ctx.fillStyle=colors[value];
-                ctx.fillRect(x+offset.x,y+offset.y,1,1);
+                ctx.fillRect(x+offset.x,y+offset.y,1.1,1.1); // 待機列ブロックの内部線を消すために敢えて1.1倍にする
                 
                 // ブロック境界を少し暗くして立体感を出す
-                const edgeAlpha=(value===5)?0.18:0.12;
-                ctx.fillStyle=`rgba(0,0,0,${edgeAlpha})`;
-                ctx.fillRect(x+offset.x+0.92,y+offset.y,0.08,1);
-                ctx.fillRect(x+offset.x,y+offset.y+0.92,1,0.08);
+                //const edgeAlpha=(value===5)?0.18:0.12;
+                //ctx.fillStyle=`rgba(0,0,0,${edgeAlpha})`;
+                //ctx.fillRect(x+offset.x+0.92,y+offset.y,0.08,1);
+                //ctx.fillRect(x+offset.x,y+offset.y+0.92,1,0.08);
 
                 // 落下中ブロックのみ左上から右下へ光沢グラデーション
-                if(isFalling){
-                    const g=ctx.createLinearGradient(
-                        x+offset.x,
-                        y+offset.y,
-                        x+offset.x+1,
-                        y+offset.y+1
-                    );
-                    g.addColorStop(0,"rgba(255,255,255,0.45)");
-                    g.addColorStop(0.35,"rgba(255,255,255,0.18)");
-                    g.addColorStop(1,"rgba(255,255,255,0)");
-                    ctx.fillStyle=g;
-                    ctx.fillRect(x+offset.x,y+offset.y,1,1);
-                }
+                //if(isFalling){
+                //    const g=ctx.createLinearGradient(
+                //        x+offset.x,
+                //        y+offset.y,
+                //        x+offset.x+1,
+                //        y+offset.y+1
+                //    );
+                //    g.addColorStop(0,"rgba(255,255,255,0.45)");
+                //    g.addColorStop(0.35,"rgba(255,255,255,0.18)");
+                //    g.addColorStop(1,"rgba(255,255,255,0)");
+                //    ctx.fillStyle=g;
+                //    ctx.fillRect(x+offset.x,y+offset.y,1,1);
+                //}
             }
         });
     });
     ctx.restore();
-    // スキップされたピースに★マークを付与
+    // スキップされたピースに▼マークを付与
     if (pieceData.isSkipped) {
         ctx.fillStyle = 'white';
         ctx.font = '1px Arial';
-        ctx.fillText('★', offset.x + 2.2, offset.y + 1);
+        ctx.fillText('▼', offset.x + 2.2, offset.y + 1);
     }
 }
 
@@ -1420,9 +1456,11 @@ function playerDrop() {
 		// 6. 新しいピースが即座に衝突する場合はゲームオーバー
         if (collide(arena, player)) {
             dropEffect = null;
-            arena.forEach(row => row.fill(0));
             gameOver = true;
-            showResultOverlay("GAME OVER!", -1); // 0ではなく-1を渡す
+            if(animationId) cancelAnimationFrame(animationId);
+            animationId = null;
+            draw();
+            showResultOverlay("GAME OVER!", -1);
         }
     }
     // 落下カウンターをリセット
@@ -1600,22 +1638,18 @@ let mirrorOffset = 0;
  * @param {number} time - requestAnimationFrameから渡される現在のタイムスタンプ
  */
 function update(time = 0) {
-	animationId = null;
-	// ゲームオーバー時は停止
     if (gameOver) return;
     if (typeof currentStage === 'undefined') return;
     // デルタ時間を計算して累積カウンタを更新
     const deltaTime = time - lastTime;
     lastTime = time;
     dropCounter += deltaTime;
-
     // 落下間隔を超えたらピースを落下
     if (dropCounter > DROP_INTERVAL) playerDrop();
-
     // 画面を再描画
     draw();
     // 次のフレームを予約
-    animationId=requestAnimationFrame(update);
+    animationId = requestAnimationFrame(update);
 }
 
 /**
@@ -1623,7 +1657,11 @@ function update(time = 0) {
  * 左右移動、落下、回転、スキップ等のプレイヤー操作を処理する
  */
 document.addEventListener('keydown', event => {
-    if(gameOver && event.key !== 'a') return;
+    if(gameOver && event.key === 'a') {
+        resetGame();
+        return;
+    }
+    if(gameOver) return;
     // 左移動：奇数座標を回避するため移動量は「2」
     if (event.key === 'ArrowLeft') {
         player.pos.x -= 2;
@@ -1713,9 +1751,10 @@ function updateUI() {
  */
 function resetGame() {
 	dropEffect = null;
+	placeFlash = null; // 追加：フラッシュエフェクトもリセット
     document.getElementById('overlay').style.display = 'none';
-    // 盤面をリセット（現在のモードは変更せず維持）
-    arena.forEach(row => row.fill(-1));
+    // 盤面をリセット（現在のモードは変更せず維持）（行ごとにfill(-1)を明示）
+    arena.forEach(row => { for(let i=0; i<row.length; i++) row[i] = -1; });
     // Piece一覧と待機列の再生成
 	pieceList=generatePiecesFromStage(currentStage);
 	pieceInventory=buildInventory(pieceList);
@@ -1740,10 +1779,11 @@ function resetGame() {
 	updateUI();
     // フラグとループの再設定
     gameOver = false;
-    lastTime = 0;
-    if(animationId===null){
-        update();
-    }
+    lastTime = performance.now(); // 現在時刻から開始
+    
+    // アニメーションIDをクリアし、強制的にupdateを呼び出してループを開始
+    if(animationId) cancelAnimationFrame(animationId);
+    animationId = requestAnimationFrame(update);
 }
 
 // 結果画面オーバーレイ表示
@@ -1774,17 +1814,17 @@ function checkGameEnd(){
 	    // プレイ時間を確定
 	    gameStat.time = Math.floor((performance.now() - gameStartTime) / 1000);
 
-	    draw(); // 最後にもう一度描画を強制
+		draw();
 	    updateStageRecord();
-	    setTimeout(() => showResultOverlay("FIX", 100), 100); // 描画後に表示
+	    if(animationId){ cancelAnimationFrame(animationId); animationId = null; }
+	    setTimeout(() => showResultOverlay("FIX", 100), 100);
 	}else if((currentGameMode === GAME_MODE.MIRROR && (gameStat.score + gameStat.ng) >= total) || (currentGameMode === GAME_MODE.SIMILAR && (gameStat.score + gameStat.ng) >= total)){
 	    gameOver = true;
-
-	    // プレイ時間を確定
 	    gameStat.time = Math.floor((performance.now() - gameStartTime) / 1000);
-
 	    draw();
 	    updateStageRecord();
+	    if(animationId){ cancelAnimationFrame(animationId); animationId = null; }
+	    
 	    const modeTitle = (currentGameMode === GAME_MODE.MIRROR) ? "Mirror" : "Similar";
         setTimeout(() => {
             const percent = Math.floor((gameStat.score / total) * 100);
@@ -1902,7 +1942,8 @@ function drawGenerateThumb(canvasId, stageData) {
     stageData.data.forEach((row, y) => {
         row.forEach((val, x) => {
             ctx.fillStyle = colors[val] || '#000';
-            ctx.fillRect(x * cw, y * ch, cw, ch);
+            // 1.15 にすることで隣接ピクセルを覆い、隙間による線を目立たなくする
+            ctx.fillRect(x * cw, y * ch, cw * 1.15, ch * 1.15);
         });
     });
 }
@@ -2226,8 +2267,8 @@ function formatTime(seconds){
 }
 
 /**
- * Perfect判定（★表示用）
- * FIXモード：　NGが0件でクリアしていれば★。 Similarモード：　100%でクリアしていれば★。 Mirrorモード：　100%でクリアしていれば★。
+ * Perfect判定（🏆トロフィー記号表示用）
+ * FIXモード：　NGが0件でクリアしていれば🏆。 Similarモード：　100%でクリアしていれば🏆。 Mirrorモード：　100%でクリアしていれば🏆。
  */
 function isPerfectClear(mode, record){
     if(!record.played) return false;
@@ -2263,9 +2304,9 @@ function updateStageSelectRecords(){
 			let star = "";
 
 			if (i === 0) {
-			    if (record.played && record.ng === 0) star = "★";
+			    if (record.played && record.ng === 0) star = "🏆";
 			} else {
-			    if (record.played && record.rate === 100) star = "★";
+			    if (record.played && record.rate === 100) star = "🏆";
 			}
 
 			check.textContent = star;
@@ -2277,10 +2318,10 @@ function updateStageSelectRecords(){
 
 		    if (i === 0) {
 		        text.textContent =
-		            `${formatTime(record.time)} / S${record.skip} / N${record.ng}`;
+		            `${formatTime(record.time)} / Skip ${record.skip} / NG ${record.ng}`;
 		    } else {
 		        text.textContent =
-		            `${record.rate}% / ${formatTime(record.time)} / S${record.skip} / N${record.ng}`;
+		            `${record.rate}% / ${formatTime(record.time)} / Skip ${record.skip} / NG ${record.ng}`;
 		    }
 		});
     });
