@@ -2177,16 +2177,35 @@ function playerDrop() {
 				};
 		    }
 		}
-		// 5. 次のピース生成と出現位置の初期化
+        // 5. クリア判定
+        const total = (currentStage.width * currentStage.height) / 4;
+        const isClear =
+            (currentGameMode === GAME_MODE.FIX && gameStat.score >= total) ||
+            ((currentGameMode === GAME_MODE.SIMILAR || currentGameMode === GAME_MODE.MIRROR) &&
+             (gameStat.score + gameStat.ng) >= total);
+
+        // クリア済みなら次のピースを生成せず終了
+        if(isClear){
+            requestAnimationFrame(() => {
+                draw();
+                checkGameEnd();
+            });
+            dropCounter = 0;
+            return;
+        }
+
+        // 6. 次のピース生成と出現位置の初期化
         player.pos.y = 0;
         player.pos.x = lastX;
         player.matrix = spawnPiece();
+
         // 描画が更新される次のタイミングで判定するために少し遅延させる
         requestAnimationFrame(() => {
             draw();
             checkGameEnd();
         });
-		// 6. 新しいピースが即座に衝突する場合はゲームオーバー
+
+		// 7. 新しいピースが即座に衝突する場合はゲームオーバー
         if (collide(arena, player)) {
             dropEffect = null;
             gameOver = true;
@@ -2207,6 +2226,7 @@ function playerDrop() {
  * @returns {boolean} 衝突している場合はtrue
  */
 function collide(arena, player) {
+    if(!player || !player.matrix) return true;
     const [m, o] = [player.matrix.matrix || player.matrix, player.pos];
     for (let y = 0; y < m.length; ++y) {
         for (let x = 0; x < m[y].length; ++x) {
@@ -2951,10 +2971,20 @@ function isBetterScore(oldRec,newRec){
 
 
 function updateStageRecord(){
+	//自動生成ステージは保存しない
+	if(typeof currentStageIndex==="undefined"){
+	    return false;
+	}
     // ランダムステージは保存しない
     if(isRandomStage){
         return false;
     }
+
+    // currentStageIndex未定義（自動生成等）は保存しない
+    if(typeof currentStageIndex==="undefined"){
+        return false;
+    }
+
     // 自動生成ステージは保存しない
     if(currentStage!==stages[currentStageIndex]){
         return false;
