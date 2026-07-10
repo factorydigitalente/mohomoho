@@ -2601,7 +2601,11 @@ function checkGameEnd(){
 }
 
 function handleTouch(btn) {
-    if(gameOver && btn === 'a') resetGame();
+    if(gameOver && btn === 'a'){
+        document.getElementById('overlay').style.display='none';
+        openStageSelect();
+        return;
+    }
     else if (btn === 'a') playerRotate(-1);
     else if (btn === 'b') handleSkip();
 }
