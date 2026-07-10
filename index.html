@@ -1526,7 +1526,7 @@ const stage49 = {
     ]
 };
 const stage50 = {
-    title: "Zenith",
+    title: "Watch",
     width: 12, height: 16,
     data: [
         [0,0,0,0,0,1,1,0,0,0,0,0],
@@ -3012,33 +3012,47 @@ function updateStageRecord(){
             updated=true;
         }
     }
+    //URL移行済みなら初回クリア時にURLをきれいにする
     if(updated){
-        saveToURL();
-    }
+	    saveToURL();
+
+	    if(migratedFromURL){
+	        const url=new URL(location.href);
+	        url.searchParams.delete("save");
+	        history.replaceState(null,"",url);
+	        migratedFromURL=false;
+	    }
+	}
     return updated;
 }
 
 // ========================================
-// URL Save
+// LocalStorage Save：URL保存関数をLocalStorage保存へ変更
 // ========================================
 function saveToURL(){
-    const url=new URL(location.href);
-    url.searchParams.set("save",exportSaveData());
-    history.replaceState(null,"",url);
+    localStorage.setItem("mohomohoSave",exportSaveData());
 }
 
 // ========================================
-// URL Load
+// LocalStorage / URL Load：LocalStorage優先、無ければURLから読み込む、URLから読み込んだら移行フラグを立てる
 // ========================================
+let migratedFromURL=false;
 function loadFromURL(){
-	//console.log("loadFromURL");
-	//console.log("stages.length =", stages.length);
+    const local=localStorage.getItem("mohomohoSave");
+    if(local){
+        return importSaveData(local);
+    }
     const params=new URLSearchParams(location.search);
     const save=params.get("save");
     if(!save){
         return false;
     }
-    return importSaveData(save);
+    const ok=importSaveData(save);
+    if(ok){
+        localStorage.setItem("mohomohoSave",save);
+        migratedFromURL=true;
+    }
+    return ok;
 }
 
 // URLからSaveData復元（この位置での記述が重要）
