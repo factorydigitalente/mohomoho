@@ -6,7 +6,7 @@
     <style>
         body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background: #f0f0f0; }
         .controls { display: flex; gap: 20px; align-items: center; margin-bottom: 10px; }
-        .grid { display: grid; grid-template-columns: repeat(12, 30px); gap: 1px; background: #999; border: 2px solid #333; cursor: crosshair; }
+        .grid { display: grid; grid-template-columns: repeat(12, 30px); gap: 1px; background: #999; border: 2px solid #333; cursor: crosshair; touch-action: none; user-select: none; }
         .cell { width: 30px; height: 30px; background: #888; }
         .palette { margin: 20px 0; display: flex; gap: 10px; }
         .color-btn { width: 40px; height: 40px; border: 3px solid transparent; cursor: pointer; }
@@ -55,11 +55,32 @@
                 const cell = document.createElement('div');
                 cell.className = 'cell';
                 cell.dataset.r = r; cell.dataset.c = c;
-                cell.onmousedown = () => paint(r, c);
-                cell.onmouseover = (e) => { if (e.buttons === 1) paint(r, c); };
-                gridEl.appendChild(cell);
+
+				gridEl.appendChild(cell);
             }
         }
+        const paintAtCoord = (clientX, clientY) => {
+            const el = document.elementFromPoint(clientX, clientY);
+            if(el && el.classList.contains('cell')){
+                const r = parseInt(el.dataset.r), c = parseInt(el.dataset.c);
+                paint(r, c);
+            }
+        };
+        gridEl.addEventListener('mousedown', (e) => {
+            paintAtCoord(e.clientX, e.clientY);
+            const move = (ev) => paintAtCoord(ev.clientX, ev.clientY);
+            const up = () => { document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up); };
+            document.addEventListener('mousemove', move);
+            document.addEventListener('mouseup', up);
+        });
+        gridEl.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            paintAtCoord(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: false });
+        gridEl.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            paintAtCoord(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: false });
 
         // クリアボタン機能
         document.getElementById('clear-btn').onclick = () => {
