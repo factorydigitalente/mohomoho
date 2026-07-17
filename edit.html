@@ -24,7 +24,10 @@
     </div>
     <div class="grid" id="grid"></div>
     <p>※クリックまたはドラッグで描画</p>
-    <textarea id="output" readonly onclick="this.select()"></textarea>
+    <div style="display:flex; gap:10px;">
+        <div>JSON形式<br><textarea id="output" onclick="this.select()"></textarea></div>
+        <div>192桁形式<br><textarea id="flat-output" onclick="this.select()"></textarea></div>
+    </div>
 
     <script>
         const COLS = 12, ROWS = 16;
@@ -95,14 +98,47 @@
             updateJSON();
         }
 
+        const flatOutputEl = document.getElementById('flat-output');
         function updateJSON() {
-            let jsonStr = "[\n";
-            jsonStr += gridData.map(row => "    [" + row.join(',') + "]").join(",\n");
-            jsonStr += "\n]";
-            outputEl.value = jsonStr;
+            outputEl.value = "[\n" + gridData.map(row => "    [" + row.join(',') + "]").join(",\n") + "\n]";
+            flatOutputEl.value = gridData.map(row => row.join('')).join('');
         }
-
+        outputEl.oninput = () => {
+            try {
+                const d = JSON.parse(outputEl.value);
+                if(d.length === ROWS && d[0].length === COLS){
+                    gridData = d;
+                    renderGrid();
+                }
+            } catch(e) {}
+        };
+        flatOutputEl.oninput = () => {
+            const v = flatOutputEl.value.replace(/[^0-5]/g, '');
+            if(v.length === 192){
+                for(let i=0; i<192; i++) gridData[Math.floor(i/COLS)][i%COLS] = parseInt(v[i]);
+                renderGrid();
+            }
+        };
+        function renderGrid() {
+            Array.from(gridEl.children).forEach((cell, i) => cell.style.backgroundColor = colors[gridData[Math.floor(i/COLS)][i%COLS]]);
+            outputEl.value = "[\n" + gridData.map(row => "    [" + row.join(',') + "]").join(",\n") + "\n]";
+            flatOutputEl.value = gridData.map(row => row.join('')).join('');
+        }
         updateJSON();
+		// テキストからグリッドを反映させる処理
+        outputEl.readOnly = false; // 編集可能に変更
+        outputEl.oninput = () => {
+            try {
+                const newData = JSON.parse(outputEl.value);
+                if (Array.isArray(newData) && newData.length === ROWS && newData[0].length === COLS) {
+                    gridData = newData;
+                    Array.from(gridEl.children).forEach((cell, i) => {
+                        const r = Math.floor(i / COLS), c = i % COLS;
+                        cell.style.backgroundColor = colors[gridData[r][c] || 0];
+                    });
+                }
+            } catch(e) {}
+        };
     </script>
 </body>
 </html>
